@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>АО import</title>
+    <link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="components/data-form/data-form.css" rel="stylesheet">
+    <link href="components/data-table/data-table.css" rel="stylesheet">
+    <link href="components/app/app.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <section>
+        <div class="row">
+            <div class="col-xs-12">
+                <hr/>
+                <h3>Добавить задачу</h3>
+
+                <div class="add-form data-form">
+                    <div class="data-form__error alert alert-danger hidden" role="alert"></div>
+                </div>
+                <hr/>
+                <table class="data-table table table-striped">
+                    <thead class="data-table__thead"></thead>
+                    <tbody class="data-table__tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+
+
+<!-- Шаблон для строки заголовков таблицы -->
+<script class="data-table__thead-tpl" type="text/x-handlebars-template">
+    <tr>
+        <th data-cellkey="ao_group_id">{{ao_group_id}}</th>
+        <th data-cellkey="target_service">{{target_service}}</th>
+        <th data-cellkey="target_id">{{target_id}}</th>
+        <th data-cellkey="tags">{{tags}}</th>
+    </tr>
+</script>
+
+<!-- Шаблон для строк таблицы -->
+<script class="data-table__row-tpl" type="text/x-handlebars-template">
+    {{#each rows}}
+    <tr data-id="{{id}}">
+        <td data-cellkey="ao_group_id">{{data.ao_group_id}}</td>
+        <td data-cellkey="target_service">{{data.target_service}}</td>
+        <td data-cellkey="target_id">{{data.target_id}}</td>
+        <td data-cellkey="tags">{{data.tags}}</td>
+        <td><span data-id="{{id}}" class="data-table__remove glyphicon glyphicon-remove" aria-hidden="true"></span></td>
+    </tr>
+    {{/each}}
+</script>
+
+<script src="libs/handlebarsjs/handlebars-v4.0.5.js"></script>
+<script src="components/data-table/data-table.js"></script>
+<script src="components/data-form/data-form.js"></script>
+<script src="components/app/app.js"></script>
+
+
+</body>
+</html>
