@@ -7,10 +7,11 @@
     class DataTable {
         constructor(options) {
             this.el = options.el;
-            this.data = options.data;
+            this.data = {};
+            this.captions = options.captions;
             this.rowTplEl = options.rowTplEl;
             this.theadTplEl = options.theadTplEl;
-            this._onRemove = options.onRemove;
+            this._eventsHandlers = {};
 
             this._init();
             this._initEvents();
@@ -20,12 +21,11 @@
             this._tbody = this.el.querySelector('.data-table__tbody');
             this._thead = this.el.querySelector('.data-table__thead');
             this._initThead();
-            this.render();
         }
 
         _initThead() {
             let tplFunc = Handlebars.compile(this.theadTplEl.innerHTML);
-            this._thead.innerHTML = tplFunc(this.data.captions);
+            this._thead.innerHTML = tplFunc(this.captions);
         }
 
         _initEvents() {
@@ -33,12 +33,27 @@
             this.el.addEventListener('click', this._onClick.bind(this));
         }
 
+        trigger(name, data) {
+            if (this._eventsHandlers[name]) {
+                this._eventsHandlers[name](data);
+            }
+        }
+
+        on(name, callback) {
+            this._eventsHandlers[name] = callback;
+        }
+
         _onClick(event) {
             event.preventDefault();
             if (event.target.classList.contains('data-table__remove')) {
-                this.removeRow(event.target.parentElement.parentElement);//элемент -> ячейка -> строка
+                if (!confirm('Удалить задачу?')) {
+                    return;
+                }
+                let id = event.target.parentElement.parentElement.dataset.id;
+                this.trigger('remove', {id});//элемент -> ячейка -> строка
             }
         }
+
 
         /**
          * Добавляем элемент в таблицу
@@ -51,26 +66,21 @@
 
         /**
          * Удаляем элемент из таблицы
-         * @param {Object} tr
+         * @param {number} row_id
          */
-        removeRow(tr) {
-            if (!confirm('Удалить задачу?')) {
-                return;
-            }
-            if (this._onRemove(tr)) {
-                for (let i = 0; i < this.data.rows.length; i++) {
-                    if (this.data.rows[i].id == tr.dataset.id) {
-                        this.data.rows.splice(i, 1);
-                        break;
-                    }
+        removeRow(row_id) {
+            for (let i = 0; i < this.data.rows.length; i++) {
+                if (this.data.rows[i].id == row_id) {
+                    this.data.rows.splice(i, 1);
+                    break;
                 }
-                this.render();
             }
+            this.render();
         }
 
-        render() {
-            if (!this.data) {
-                return;
+        render(data) {
+            if (data) {
+                this.data.rows = data;
             }
             let tplFunc = Handlebars.compile(this.rowTplEl.innerHTML);
             this._tbody.innerHTML = tplFunc(this.data);

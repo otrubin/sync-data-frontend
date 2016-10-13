@@ -5,55 +5,10 @@
     'use strict';
 
     // import
+    let RequestModel = window.RequestModel;
     let DataTable = window.DataTable;
+    let DataForm = window.DataForm;
 
-    let data = {
-        captions: {
-            ao_group_id: 'ID группы источника',
-            target_service: 'Целевой сервис',
-            target_id: 'ID группы целевого сервиса',
-            tags: 'Теги'
-        },
-        rows: [
-            {
-                id: 1,
-                data: {
-                    ao_group_id: 276,
-                    target_service: 'u',
-                    target_id: 5968206,
-                    tags: 'test1'
-                }
-            },
-            {
-                id: 2,
-                data: {
-                    ao_group_id: 277,
-                    target_service: 'u',
-                    target_id: 5968206,
-                    tags: 'test1'
-                }
-            },
-            {
-                id: 3,
-                data: {
-                    ao_group_id: 280,
-                    target_service: 'u',
-                    target_id: 5968206,
-                    tags: 'test2'
-                }
-
-            },
-            {
-                id: 4,
-                data: {
-                    ao_group_id: 273,
-                    target_service: 'u',
-                    target_id: 5968206,
-                    tags: 'test2'
-                }
-            }
-        ]
-    };
 
     let formFields = [
         {
@@ -85,15 +40,70 @@
         return 5;
     }
 
-    function removeRowOnServer(rowId) {
-        //пока заглушка
-        //пытаемся удалить данные на сервере,
-        // в случае успеха сервер должен вернуть true
-        //при неудаче false
-        return true;
+
+    class App {
+
+        constructor(options) {
+            this._table = null;
+            this._init();
+        }
+
+        _init() {
+            this._table = new DataTable({
+                el: document.querySelector('.data-table'),
+                rowTplEl: document.querySelector('.data-table__row-tpl'),
+                theadTplEl: document.querySelector('.data-table__thead-tpl'),
+                captions: {
+                    ao_group_id: 'ID группы источника',
+                    target_service: 'Целевой сервис',
+                    target_id: 'ID группы целевого сервиса',
+                    tags: 'Теги'
+                }
+            });
+            this._table.on('remove', this.removeRowOnServer.bind(this));
+            this.listRowsFromServer();
+        }
+
+        /**
+         * пытаемся удалить данные на сервере, в случае успеха сервер должен вернуть true, при неудаче false
+         * @param rowId
+         * @returns {boolean}
+         */
+        removeRowOnServer(option) {
+            let requestModel = new RequestModel({
+                url: 'taskAjax.php',
+                params: 'action=remove&id=' + option.id,
+                responseFormat: 'json'
+            });
+            requestModel.on('update', function (response) {
+                if (response.success) {
+                    this._table.removeRow(response.rowId);
+                }
+            }.bind(this));
+            requestModel.fetch();
+        }
+
+        _renderTable(response) {
+            if (response.success) {
+                this._table.render(response.list);
+            }
+        }
+
+        listRowsFromServer() {
+            let requestModel = new RequestModel({
+                url: 'taskAjax.php',
+                params: 'action=list',
+                responseFormat: 'json'
+            });
+            requestModel.on('update', this._renderTable.bind(this));
+            requestModel.fetch();
+        }
     }
 
-    let dataTable = new DataTable({
+    let app = new App();
+
+
+    /*    let dataTable = new DataTable({
         el: document.querySelector('.data-table'),
         rowTplEl: document.querySelector('.data-table__row-tpl'),
         theadTplEl: document.querySelector('.data-table__thead-tpl'),
@@ -101,7 +111,7 @@
         onRemove(tr){
             return removeRowOnServer(tr.dataset.id);
         }
-    });
+     });*/
 
     let dataForm = new DataForm({
         el: document.querySelector('.add-form'),
@@ -123,6 +133,20 @@
             }
 
         }
+    });
+
+
+    let btnTest = document.querySelector('.btn__test');
+    btnTest.addEventListener('click', function (event) {
+        let requestModel = new RequestModel({
+            url: 'taskAjax.php',
+            params: 'action=add&ao_group_id=555',
+            responseFormat: 'text'
+        });
+        requestModel.on('update', function (response) {
+            console.log(response);
+        });
+        requestModel.fetch();
     });
 
 })();
